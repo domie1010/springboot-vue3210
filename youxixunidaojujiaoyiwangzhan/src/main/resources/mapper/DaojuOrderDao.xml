@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.DaojuOrderDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.daoju_order_uuid_number as daojuOrderUuidNumber
+        ,a.daoju_id as daojuId
+        ,a.yonghu_id as yonghuId
+        ,a.buy_number as buyNumber
+        ,a.daoju_order_true_price as daojuOrderTruePrice
+        ,a.daoju_order_courier_name as daojuOrderCourierName
+        ,a.daoju_order_courier_number as daojuOrderCourierNumber
+        ,a.daoju_order_types as daojuOrderTypes
+        ,a.daoju_order_payment_types as daojuOrderPaymentTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.DaojuOrderView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,daoju.daoju_name as daojuName
+        ,daoju.daoju_uuid_number as daojuUuidNumber
+        ,daoju.daoju_photo as daojuPhoto
+        ,daoju.daoju_types as daojuTypes
+        ,daoju.daoju_kucun_number as daojuKucunNumber
+        ,daoju.daoju_price as daojuPrice
+        ,daoju.daoju_old_money as daojuOldMoney
+        ,daoju.daoju_new_money as daojuNewMoney
+        ,daoju.daoju_clicknum as daojuClicknum
+        ,daoju.daoju_content as daojuContent
+        ,daoju.shangxia_types as shangxiaTypes
+        ,daoju.daoju_delete as daojuDelete
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.new_money as newMoney
+        ,yonghu.yonghu_sum_jifen as yonghuSumJifen
+        ,yonghu.yonghu_new_jifen as yonghuNewJifen
+        ,yonghu.huiyuandengji_types as huiyuandengjiTypes
+
+        FROM daoju_order  a
+        left JOIN daoju daoju ON a.daoju_id = daoju.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.daojuOrderUuidNumber != '' and params.daojuOrderUuidNumber != null and params.daojuOrderUuidNumber != 'null' ">
+                and a.daoju_order_uuid_number like CONCAT('%',#{params.daojuOrderUuidNumber},'%')
+            </if>
+            <if test="params.daojuId != null and params.daojuId != ''">
+                and (
+                    a.daoju_id = #{params.daojuId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.buyNumberStart != null and params.buyNumberStart != ''">
+                <![CDATA[  and a.buy_number >= #{params.buyNumberStart}   ]]>
+            </if>
+            <if test="params.buyNumberEnd != null and params.buyNumberEnd != ''">
+                <![CDATA[  and a.buy_number <= #{params.buyNumberEnd}   ]]>
+            </if>
+             <if test="params.buyNumber != null and params.buyNumber != ''">
+                and a.buy_number = #{params.buyNumber}
+             </if>
+            <if test="params.daojuOrderTruePriceStart != null ">
+                <![CDATA[  and a.daoju_order_true_price >= #{params.daojuOrderTruePriceStart}   ]]>
+            </if>
+            <if test="params.daojuOrderTruePriceEnd != null ">
+                <![CDATA[  and a.daoju_order_true_price <= #{params.daojuOrderTruePriceEnd}   ]]>
+            </if>
+            <if test=" params.daojuOrderCourierName != '' and params.daojuOrderCourierName != null and params.daojuOrderCourierName != 'null' ">
+                and a.daoju_order_courier_name like CONCAT('%',#{params.daojuOrderCourierName},'%')
+            </if>
+            <if test=" params.daojuOrderCourierNumber != '' and params.daojuOrderCourierNumber != null and params.daojuOrderCourierNumber != 'null' ">
+                and a.daoju_order_courier_number like CONCAT('%',#{params.daojuOrderCourierNumber},'%')
+            </if>
+            <if test="params.daojuOrderTypes != null and params.daojuOrderTypes != ''">
+                and a.daoju_order_types = #{params.daojuOrderTypes}
+            </if>
+            <if test="params.daojuOrderPaymentTypes != null and params.daojuOrderPaymentTypes != ''">
+                and a.daoju_order_payment_types = #{params.daojuOrderPaymentTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断道具的id不为空 -->
+            <if test=" params.daojuIdNotNull != '' and params.daojuIdNotNull != null and params.daojuIdNotNull != 'null' ">
+                and a.daoju_id IS NOT NULL
+            </if>
+            <if test=" params.daojuName != '' and params.daojuName != null and params.daojuName != 'null' ">
+                and daoju.daoju_name like CONCAT('%',#{params.daojuName},'%')
+            </if>
+            <if test=" params.daojuUuidNumber != '' and params.daojuUuidNumber != null and params.daojuUuidNumber != 'null' ">
+                and daoju.daoju_uuid_number like CONCAT('%',#{params.daojuUuidNumber},'%')
+            </if>
+            <if test="params.daojuTypes != null  and params.daojuTypes != ''">
+                and daoju.daoju_types = #{params.daojuTypes}
+            </if>
+
+            <if test="params.daojuKucunNumberStart != null  and params.daojuKucunNumberStart != '' ">
+                <![CDATA[  and daoju.daoju_kucun_number >= #{params.daojuKucunNumberStart}   ]]>
+            </if>
+            <if test="params.daojuKucunNumberEnd != null  and params.daojuKucunNumberEnd != '' ">
+                <![CDATA[  and daoju.daoju_kucun_number <= #{params.daojuKucunNumberEnd}   ]]>
+            </if>
+            <if test="params.daojuKucunNumber != null  and params.daojuKucunNumber != '' ">
+                and daoju.daoju_kucun_number = #{params.daojuKucunNumber}
+            </if>
+            <if test="params.daojuPriceStart != null  and params.daojuPriceStart != '' ">
+                <![CDATA[  and daoju.daoju_price >= #{params.daojuPriceStart}   ]]>
+            </if>
+            <if test="params.daojuPriceEnd != null  and params.daojuPriceEnd != '' ">
+                <![CDATA[  and daoju.daoju_price <= #{params.daojuPriceEnd}   ]]>
+            </if>
+            <if test="params.daojuPrice != null  and params.daojuPrice != '' ">
+                and daoju.daoju_price = #{params.daojuPrice}
+            </if>
+            <if test="params.daojuOldMoneyStart != null ">
+                <![CDATA[  and daoju.daoju_old_money >= #{params.daojuOldMoneyStart}   ]]>
+            </if>
+            <if test="params.daojuOldMoneyEnd != null ">
+                <![CDATA[  and daoju.daoju_old_money <= #{params.daojuOldMoneyEnd}   ]]>
+            </if>
+            <if test="params.daojuNewMoneyStart != null ">
+                <![CDATA[  and daoju.daoju_new_money >= #{params.daojuNewMoneyStart}   ]]>
+            </if>
+            <if test="params.daojuNewMoneyEnd != null ">
+                <![CDATA[  and daoju.daoju_new_money <= #{params.daojuNewMoneyEnd}   ]]>
+            </if>
+            <if test="params.daojuClicknumStart != null  and params.daojuClicknumStart != '' ">
+                <![CDATA[  and daoju.daoju_clicknum >= #{params.daojuClicknumStart}   ]]>
+            </if>
+            <if test="params.daojuClicknumEnd != null  and params.daojuClicknumEnd != '' ">
+                <![CDATA[  and daoju.daoju_clicknum <= #{params.daojuClicknumEnd}   ]]>
+            </if>
+            <if test="params.daojuClicknum != null  and params.daojuClicknum != '' ">
+                and daoju.daoju_clicknum = #{params.daojuClicknum}
+            </if>
+            <if test=" params.daojuContent != '' and params.daojuContent != null and params.daojuContent != 'null' ">
+                and daoju.daoju_content like CONCAT('%',#{params.daojuContent},'%')
+            </if>
+            <if test="params.shangxiaTypes != null  and params.shangxiaTypes != ''">
+                and daoju.shangxia_types = #{params.shangxiaTypes}
+            </if>
+
+            <if test="params.daojuDeleteStart != null  and params.daojuDeleteStart != '' ">
+                <![CDATA[  and daoju.daoju_delete >= #{params.daojuDeleteStart}   ]]>
+            </if>
+            <if test="params.daojuDeleteEnd != null  and params.daojuDeleteEnd != '' ">
+                <![CDATA[  and daoju.daoju_delete <= #{params.daojuDeleteEnd}   ]]>
+            </if>
+            <if test="params.daojuDelete != null  and params.daojuDelete != '' ">
+                and daoju.daoju_delete = #{params.daojuDelete}
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test="params.newMoneyStart != null ">
+                <![CDATA[  and yonghu.new_money >= #{params.newMoneyStart}   ]]>
+            </if>
+            <if test="params.newMoneyEnd != null ">
+                <![CDATA[  and yonghu.new_money <= #{params.newMoneyEnd}   ]]>
+            </if>
+            <if test="params.yonghuSumJifenStart != null ">
+                <![CDATA[  and yonghu.yonghu_sum_jifen >= #{params.yonghuSumJifenStart}   ]]>
+            </if>
+            <if test="params.yonghuSumJifenEnd != null ">
+                <![CDATA[  and yonghu.yonghu_sum_jifen <= #{params.yonghuSumJifenEnd}   ]]>
+            </if>
+            <if test="params.yonghuNewJifenStart != null ">
+                <![CDATA[  and yonghu.yonghu_new_jifen >= #{params.yonghuNewJifenStart}   ]]>
+            </if>
+            <if test="params.yonghuNewJifenEnd != null ">
+                <![CDATA[  and yonghu.yonghu_new_jifen <= #{params.yonghuNewJifenEnd}   ]]>
+            </if>
+            <if test="params.huiyuandengjiTypes != null  and params.huiyuandengjiTypes != ''">
+                and yonghu.huiyuandengji_types = #{params.huiyuandengjiTypes}
+            </if>
+
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
